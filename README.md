@@ -45,5 +45,6 @@ Tasarım şablonları `src/render.py` içindedir. Şablon değişince dosyadaki 
 
 - Görsellerdeki indirim oranı her zaman ürünün kendi gerçek oranıdır. "…'e varan" ifadesindeki oran, feed'deki stokta olan sezon sonu ürünlerinin en yüksek indiriminden hesaplanır; elle girilmez.
 - Üstü çizili fiyat feed'deki `price` alanından gelir. İndirim reklamlarında önceki fiyatın son 10 günün en düşük fiyatı olması gerekir; bunu Ticimax tarafında kontrol edin.
+- Ölçü/beden tablosu görselleri otomatik tanınır ve reklam görsellerinde kullanılmaz. Hiç fotoğrafı olmayan (yalnızca tablo görseli olan) ürünler ek feed'e girmez; listeleri `status.json` içindeki `fotografsiz_urunler` alanındadır.
 - Feed boş veya bozuk gelirse çalışma durur ve önceki gecenin görselleri yayında kalır. Hata olduğunda GitHub hesabınıza e-posta gelir.
 - GitHub, uzun süre değişmeyen depolarda zamanlanmış işleri durdurur; iş ayın ilk günü depoya küçük bir işaret yazarak bunu önler.

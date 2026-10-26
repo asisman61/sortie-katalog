@@ -140,6 +140,7 @@ def main():
 
     # 4) üretim
     errors = {}
+    no_photo = []
     args = []
     for p, k in todo:
         files = [src_path(a.cache, u) for u in p['images'][:n_src] if os.path.exists(src_path(a.cache, u))]
@@ -149,7 +150,16 @@ def main():
     with ProcessPoolExecutor(a.workers) as ex:
         for gid, err in ex.map(render_one, args, chunksize=4):
             done += 1
-            if err:
+            if err == 'görsel yok':
+                # kullanılabilir fotoğrafı yok (ör. yalnızca ölçü tablosu): eski görseli
+                # de kaldır ki ek feed'e girmesin; Meta ana feed'deki görseli kullanır
+                no_photo.append(gid)
+                manifest.pop(gid, None)
+                for suf in ('', '_story'):
+                    f = os.path.join(img_dir, gid + suf + '.jpg')
+                    if os.path.exists(f):
+                        os.remove(f)
+            elif err:
                 errors[gid] = err
             else:
                 manifest[gid] = {'key': keys[gid], 'at': datetime.now(timezone.utc).isoformat(timespec='seconds')}
@@ -157,6 +167,8 @@ def main():
                 log(f'  {done}/{len(args)}')
     for gid, err in errors.items():
         log('  HATA', gid, err)
+    if no_photo:
+        log('  kullanılabilir fotoğrafı olmayan ürünler (atlandı):', ', '.join(no_photo))
 
     # 5) feed'den düşen ürünlerin görsellerini temizle
     live_ids = {p['group_id'] for p in live}
@@ -195,7 +207,8 @@ def main():
     json.dump(manifest, open(man_path, 'w'), indent=0)
     status = {
         'son_calisma': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-        'stokta_grup': len(live), 'yeniden_uretilen': len(todo) - len(errors), 'hata': len(errors),
+        'stokta_grup': len(live), 'yeniden_uretilen': len(todo) - len(errors) - len(no_photo), 'hata': len(errors),
+        'fotografsiz_urunler': no_photo,
         'kampanya_dagilimi': per_camp, 'ek_feed_kampanyalari': sorted(rollout),
         'ek_feed_satir': len(rows), 'sezon_sonu_en_yuksek_indirim': umbrella,
         'sure_sn': round(time.time() - t0),
