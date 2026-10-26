@@ -67,9 +67,20 @@ def product_key(p, umbrella):
     return hashlib.sha1(json.dumps(parts, ensure_ascii=False, default=str).encode()).hexdigest()[:16]
 
 
+def apply_styles(cfg):
+    styles = cfg.get('styles') or {}
+    for camp, key in (('new', 'new'), ('end', 'end'), ('none', None)):
+        st = styles.get(camp)
+        if st:
+            if st not in render.STYLES:
+                sys.exit(f"config.json: '{st}' diye bir tasarım yok. Seçenekler: {', '.join(render.STYLES)}")
+            render.STYLE_FOR[key] = st
+
+
 def render_one(args):
-    p, files, out_dir, quality, umbrella = args
+    p, files, out_dir, quality, umbrella, styles = args
     render.UMBRELLA_MAX = umbrella
+    render.STYLE_FOR.update(styles)
     style = render.style_for(p)
     try:
         for fmt, suffix in (('square', ''), ('story', '_story')):
@@ -95,6 +106,7 @@ def main():
     ap.add_argument('--workers', type=int, default=os.cpu_count() or 2)
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(ROOT, 'config.json'), encoding='utf-8'))
+    apply_styles(cfg)
     t0 = time.time()
 
     os.makedirs(os.path.join(a.cache, 'src'), exist_ok=True)
@@ -144,7 +156,7 @@ def main():
     args = []
     for p, k in todo:
         files = [src_path(a.cache, u) for u in p['images'][:n_src] if os.path.exists(src_path(a.cache, u))]
-        args.append((p, files, img_dir, cfg.get('jpeg_quality', 88), umbrella))
+        args.append((p, files, img_dir, cfg.get('jpeg_quality', 88), umbrella, dict(render.STYLE_FOR)))
     keys = dict((p['group_id'], k) for p, k in todo)
     done = 0
     with ProcessPoolExecutor(a.workers) as ex:

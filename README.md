@@ -37,6 +37,7 @@ Ek feed yalnızca `id` ve `image_link` içerir; ürünün diğer bilgileri ana f
 | Tüm kataloğu yeni görsellere geçirmek | `config.json` → `"rollout": ["end", "new", "none"]` |
 | Eski görsellere dönmek | Commerce Manager'da ek veri kaynağını silin veya `"rollout": []` |
 | Son çalışmanın özeti | `https://KULLANICI.github.io/DEPO/status.json` |
+| Bir kampanyanın tasarımını değiştirmek | `config.json` → `"styles"` (diptych, campaign, editorial) |
 | Story görsellerinin listesi | `https://KULLANICI.github.io/DEPO/feed/story.csv` |
 
 Tasarım şablonları `src/render.py` içindedir. Şablon değişince dosyadaki `RENDER_VERSION` bir artırılır; ertesi gece tüm görseller yeniden üretilir.

@@ -4,6 +4,9 @@
   "rollout": ["end"],
   "_rollout": "Ek feed'e hangi kampanyaların ürünleri girsin. end = Sezon Sonu, new = Yeni Sezon, none = indirimsiz. Test bitince [\"end\", \"new\", \"none\"] yapın.",
 
+  "styles": {"new": "diptych", "end": "campaign", "none": "diptych"},
+  "_styles": "Her kampanyanın tasarımı. Seçenekler: diptych (B · Diptik), campaign (C · Kampanya), editorial (A · Editoryal). Değiştirince o kampanyanın görselleri ertesi gece yenilenir.",
+
   "source_images_per_product": 5,
   "jpeg_quality": 88
 }
