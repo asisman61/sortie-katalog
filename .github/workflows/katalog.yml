@@ -2,8 +2,16 @@ name: Katalog görselleri
 
 on:
   schedule:
-    - cron: "0 0 * * *"      # her gece 03:00 (Türkiye saati)
+    # Türkiye saatiyle 03:00, 07:00, 10:00, 13:00, 16:00, 19:00, 22:00.
+    # Yalnızca değişen ürünler üretilir; değişiklik yoksa birkaç dakikada biter.
+    - cron: "0 0,4,7,10,13,16,19 * * *"
   workflow_dispatch:          # Actions sekmesinden elle çalıştırma
+  push:                       # ayar veya şablon değişince hemen çalış
+    branches: [main]
+    paths:
+      - "config.json"
+      - "src/**"
+      - "assets/**"
 
 permissions:
   contents: write             # aylık canlılık işareti için
@@ -61,7 +69,7 @@ jobs:
       - name: Aylık canlılık işareti
         if: github.event_name == 'schedule'
         run: |
-          if [ "$(date -u +%d)" = "01" ]; then
+          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "00" ]; then
             date -u +%Y-%m-%d > .canli
             git config user.name "katalog-bot"
             git config user.email "katalog-bot@users.noreply.github.com"

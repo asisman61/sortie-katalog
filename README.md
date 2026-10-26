@@ -1,6 +1,6 @@
 # Sortie katalog görselleri
 
-Sitenin ürün feed'inden her gece tasarımlı reklam görselleri üretir ve Meta kataloğu için bir **ek feed** yayınlar.
+Sitenin ürün feed'inden gün içinde 7 kez (03, 07, 10, 13, 16, 19, 22) tasarımlı reklam görselleri üretir ve Meta kataloğu için bir **ek feed** yayınlar.
 
 - **Yeni Sezon** ürünleri → Diptik tasarım (ön + arka/detay, "Yeni Sezon" rozeti, %20)
 - **Sezon Sonu** ürünleri → Kampanya tasarımı (büyük indirim oranı, "…'e varan indirimler")
@@ -36,11 +36,12 @@ Ek feed yalnızca `id` ve `image_link` içerir; ürünün diğer bilgileri ana f
 | Yeni Sezon ürünlerini de teste almak | `config.json` → `"rollout": ["end", "new"]` |
 | Tüm kataloğu yeni görsellere geçirmek | `config.json` → `"rollout": ["end", "new", "none"]` |
 | Eski görsellere dönmek | Commerce Manager'da ek veri kaynağını silin veya `"rollout": []` |
+| Hemen yeniden üretmek | `config.json`'da herhangi bir değişikliği kaydetmek işi başlatır; ya da Actions → Katalog görselleri → Run workflow |
 | Son çalışmanın özeti | `https://KULLANICI.github.io/DEPO/status.json` |
 | Bir kampanyanın tasarımını değiştirmek | `config.json` → `"styles"` (diptych, campaign, editorial) |
 | Story görsellerinin listesi | `https://KULLANICI.github.io/DEPO/feed/story.csv` |
 
-Tasarım şablonları `src/render.py` içindedir. Şablon değişince dosyadaki `RENDER_VERSION` bir artırılır; ertesi gece tüm görseller yeniden üretilir.
+Tasarım şablonları `src/render.py` içindedir. Şablon değişince dosyadaki `RENDER_VERSION` bir artırılır; değişiklik kaydedilince iş kendiliğinden çalışır ve tüm görseller yeniden üretilir.
 
 ## Notlar
 
