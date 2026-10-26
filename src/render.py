@@ -5,13 +5,14 @@
 Üç tasarım yönü (editorial, diptych, campaign) x iki format (square 1080x1080, story 1080x1920).
 """
 import os, re, glob
+os.environ.setdefault('OPENCV_LOG_LEVEL', 'ERROR')
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 A = lambda *p: os.path.join(ROOT, 'assets', *p)
 
-RENDER_VERSION = 2  # şablon değişince artır: tüm görseller yeniden üretilir
+RENDER_VERSION = 3  # şablon değişince artır: tüm görseller yeniden üretilir
 
 INK = (26, 24, 22)
 CREAM = (244, 239, 232)
@@ -119,14 +120,26 @@ def product_images(p, cache):
 
 _chart_cache = {}
 def is_chart(path):
-    """Ölçü tablosu gibi grafik görselleri ele: çok beyaz + düşük doygunluk + çok kenar."""
+    """Ölçü/beden tablosu gibi grafik görselleri ele; bunlar reklamda hiç kullanılmaz.
+
+    Tabloların satır ayraçları görselin neredeyse tamamı boyunca uzanan düz yatay
+    çizgilerdir; stüdyo fotoğraflarında en fazla duvar/zemin çizgisi (1-4 adet) olur.
+    Enine görseller ve 4+ çizgili kare görseller (beden tablosu şablonu) da elenir.
+    """
     if path in _chart_cache:
         return _chart_cache[path]
-    im = Image.open(path).convert('RGB'); im.thumbnail((200, 250))
-    a = np.asarray(im).astype(int)
-    white = ((a > 240).all(2)).mean()
-    edges = np.asarray(im.convert('L').filter(ImageFilter.FIND_EDGES)) > 60
-    r = white > 0.3 and edges.mean() > 0.13
+    import cv2
+    g = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    H0, W0 = g.shape
+    sc = 600 / W0
+    g = cv2.resize(g, None, fx=sc, fy=sc, interpolation=cv2.INTER_AREA)
+    W = g.shape[1]
+    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=3)
+    e = (np.abs(gy) > 25).astype(np.uint8) * 255
+    hl = cv2.morphologyEx(e, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (int(W * 0.70), 1)))
+    rows = np.flatnonzero(np.diff(np.r_[0, (hl > 0).any(1).astype(np.uint8)]) == 1)
+    lines = sum(1 for k, r in enumerate(rows) if k == 0 or r - rows[k - 1] > 6)
+    r = W0 / H0 > 1.15 or lines >= 5 or (W0 / H0 >= 0.95 and lines >= 4)
     _chart_cache[path] = r
     return r
 
