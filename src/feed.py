@@ -33,6 +33,7 @@ def load(path):
             link=_g(f, 'link'), price=price, sale=sale,
             discount=round((1 - sale / price) * 100) if sale and price and sale < price else 0,
             new_season=_g(f, 'custom_label_3') == 'Yeni Sezon',
+            outlet=_g(f, 'custom_label_3') == 'Outlet',
             sizes=sizes, in_stock=[s for s, ok in sizes if ok],
             images=uniq,
         ))

@@ -63,13 +63,13 @@ def product_key(p, umbrella):
     b = render.badges(p)
     parts = [render.RENDER_VERSION, render.style_for(p), p['title'], p['color'], p['type'],
              p['price'], p['sale'], p['discount'], p['new_season'], p['in_stock'], p['sizes'],
-             p['images'], umbrella if b.get('camp') == 'end' else None]
+             p['images'], b.get('camp'), umbrella.get(b.get('camp'))]
     return hashlib.sha1(json.dumps(parts, ensure_ascii=False, default=str).encode()).hexdigest()[:16]
 
 
 def apply_styles(cfg):
     styles = cfg.get('styles') or {}
-    for camp, key in (('new', 'new'), ('end', 'end'), ('none', None)):
+    for camp, key in (('new', 'new'), ('end', 'end'), ('outlet', 'outlet'), ('none', None)):
         st = styles.get(camp)
         if st:
             if st not in render.STYLES:
@@ -79,7 +79,7 @@ def apply_styles(cfg):
 
 def render_one(args):
     p, files, out_dir, quality, umbrella, styles = args
-    render.UMBRELLA_MAX = umbrella
+    render.UMBRELLA = umbrella
     render.STYLE_FOR.update(styles)
     style = render.style_for(p)
     try:
@@ -118,7 +118,9 @@ def main():
     if not a.feed_file:
         if not a.feed_url:
             sys.exit('FEED_URL tanımlı değil (GitHub > Settings > Secrets > FEED_URL).')
-        data = fetch(a.feed_url, timeout=180)
+        # Ticimax XML'i 24 saate kadar önbellekte tutuyor; her seferinde güncel kopyayı iste
+        sep = '&' if '?' in a.feed_url else '?'
+        data = fetch(f'{a.feed_url}{sep}t={int(time.time())}', timeout=180)
         if len(data) < 1000 or b'<entry' not in data:
             sys.exit('Feed boş ya da bozuk geldi; önceki görseller korunuyor.')
         open(feed_path, 'wb').write(data)
@@ -126,9 +128,14 @@ def main():
     live = [p for p in products if p['in_stock'] and p['images']]
     if a.limit:
         live = live[:a.limit]
-    umbrella = max((p['discount'] for p in products if p['in_stock'] and not p['new_season']), default=0) or None
-    render.UMBRELLA_MAX = umbrella
-    log(f'feed: {len(products)} grup, stokta {len(live)}; sezon sonu en yüksek indirim: %{umbrella}')
+    umbrella = {}
+    for p in products:
+        c = render.badges(p).get('camp')
+        if p['in_stock'] and c in ('end', 'outlet'):
+            umbrella[c] = max(umbrella.get(c, 0), p['discount'])
+    umbrella = {k: v for k, v in umbrella.items() if v}
+    render.UMBRELLA = umbrella
+    log(f'feed: {len(products)} grup, stokta {len(live)}; en yüksek indirimler: {umbrella}')
 
     # 2) hangi ürünler değişti
     man_path = os.path.join(a.out, 'manifest.json')
@@ -222,7 +229,7 @@ def main():
         'stokta_grup': len(live), 'yeniden_uretilen': len(todo) - len(errors) - len(no_photo), 'hata': len(errors),
         'fotografsiz_urunler': no_photo,
         'kampanya_dagilimi': per_camp, 'ek_feed_kampanyalari': sorted(rollout),
-        'ek_feed_satir': len(rows), 'sezon_sonu_en_yuksek_indirim': umbrella,
+        'ek_feed_satir': len(rows), 'en_yuksek_indirim': umbrella,
         'sure_sn': round(time.time() - t0),
     }
     json.dump(status, open(os.path.join(a.out, 'status.json'), 'w'), ensure_ascii=False, indent=1)

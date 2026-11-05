@@ -258,10 +258,11 @@ def draw_deal(d, xy, deal, size, fill, anchor='l'):
 CAMPAIGNS = {
     'new': {'label': 'YENİ SEZON', 'kicker': 'Yeni Sezonda', 'sub': 'İNDİRİM'},
     'end': {'label': 'SEZON SONU', 'kicker': 'SEZON SONU', 'sub': 'İNDİRİM'},
+    'outlet': {'label': 'OUTLET', 'kicker': 'OUTLET', 'sub': 'İNDİRİM'},
 }
-# Sezon sonu şemsiye cümlesindeki "...'e varan" oranı. Boru hattı bunu feed'deki
-# gerçek en yüksek sezon sonu indiriminden hesaplar; elle yazılan oran kullanılmaz.
-UMBRELLA_MAX = None
+# "...'e varan" oranları, kampanya başına. Boru hattı bunları feed'deki gerçek en
+# yüksek indirimden hesaplar ({'end': 62, 'outlet': 40}); elle yazılan oran kullanılmaz.
+UMBRELLA = {}
 
 _DATIVE_ONES = {1: "'e", 2: "'ye", 3: "'e", 4: "'e", 5: "'e", 6: "'ya", 7: "'ye", 8: "'e", 9: "'a"}
 _DATIVE_TENS = {1: "'a", 2: "'ye", 3: "'a", 4: "'a", 5: "'ye", 6: "'a", 7: "'e", 8: "'e", 9: "'a"}
@@ -279,6 +280,8 @@ def badges(p):
     rate = p['discount']
     if p['new_season']:
         out['camp'] = 'new'
+    elif p.get('outlet'):
+        out['camp'] = 'outlet'
     elif rate > 0:
         out['camp'] = 'end'
     if 'camp' in out:
@@ -394,7 +397,7 @@ def diptych(p, imgs, fmt):
     if 'deal' in b:
         R = 58
         cx, cy = W - pad - 18 - R, y0 + 18 + R
-        d.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(WINE if b.get('camp') == 'end' else INK) + (255,))
+        d.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(WINE if b.get('camp') in ('end', 'outlet') else INK) + (255,))
         draw_deal(d, (cx, cy + 14), b['deal'], 42, WHITE, anchor='m')
     ft, lines = fit_lines('serif', clean_title(p), maxw, 50 if story else 44, 30, 2)
     lh = ft.size * 1.15
@@ -426,8 +429,8 @@ def _headline(d, p, b, x, y, big, maxw=10**6):
         yb = y + 48 + int(big * 0.95)
         draw_deal(d, (x - 4, yb), b['deal'], big, WHITE)
         sub = cfg['sub']
-        if camp == 'end' and UMBRELLA_MAX:
-            sub = tr_upper(f"{pct_dative(UMBRELLA_MAX)} varan indirimler")
+        if UMBRELLA.get(camp):
+            sub = tr_upper(f"{pct_dative(UMBRELLA[camp])} varan indirimler")
         fs = font('sans', 22, 500)
         tr = 8 if text_w(fs, sub, 8) <= maxw else 3
         draw_text(d, (x, yb + 48), sub, fs, SAND, tr)
@@ -527,7 +530,7 @@ def render(p, style, fmt, files):
     return STYLES[style](p, imgs, fmt)
 
 # Kampanyaya göre tasarım yönü
-STYLE_FOR = {'new': 'diptych', 'end': 'campaign', None: 'diptych'}
+STYLE_FOR = {'new': 'diptych', 'end': 'campaign', 'outlet': 'campaign', None: 'diptych'}
 
 def style_for(p):
     return STYLE_FOR[badges(p).get('camp')]

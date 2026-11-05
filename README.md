@@ -4,6 +4,7 @@ Sitenin ürün feed'inden gün içinde 7 kez (03, 07, 10, 13, 16, 19, 22) tasar�
 
 - **Yeni Sezon** ürünleri → Diptik tasarım (ön + arka/detay, "Yeni Sezon" rozeti, %20)
 - **Sezon Sonu** ürünleri → Kampanya tasarımı (büyük indirim oranı, "…'e varan indirimler")
+- **Outlet** ürünleri (Ticimax'ta `custom_label_3 = Outlet`) → Kampanya tasarımı, "OUTLET" başlığıyla; "…'e varan" oranı Outlet ürünlerinden ayrı hesaplanır
 - Kare (1080×1080) ve story (1080×1920) görseller birlikte üretilir.
 - Yalnızca değişen ürünler yeniden üretilir: yeni ürün, fiyat/indirim değişikliği, kampanya geçişi, beden tükenmesi.
 
@@ -33,8 +34,8 @@ Ek feed yalnızca `id` ve `image_link` içerir; ürünün diğer bilgileri ana f
 
 | Ne yapmak istiyorsunuz | Nerede |
 |---|---|
-| Yeni Sezon ürünlerini de teste almak | `config.json` → `"rollout": ["end", "new"]` |
-| Tüm kataloğu yeni görsellere geçirmek | `config.json` → `"rollout": ["end", "new", "none"]` |
+| Yeni Sezon ürünlerini de teste almak | `config.json` → `"rollout": ["end", "outlet", "new"]` |
+| Tüm kataloğu yeni görsellere geçirmek | `config.json` → `"rollout": ["end", "outlet", "new", "none"]` |
 | Eski görsellere dönmek | Commerce Manager'da ek veri kaynağını silin veya `"rollout": []` |
 | Hemen yeniden üretmek | `config.json`'da herhangi bir değişikliği kaydetmek işi başlatır; ya da Actions → Katalog görselleri → Run workflow |
 | Son çalışmanın özeti | `https://KULLANICI.github.io/DEPO/status.json` |
@@ -45,8 +46,9 @@ Tasarım şablonları `src/render.py` içindedir. Şablon değişince dosyadaki 
 
 ## Notlar
 
-- Görsellerdeki indirim oranı her zaman ürünün kendi gerçek oranıdır. "…'e varan" ifadesindeki oran, feed'deki stokta olan sezon sonu ürünlerinin en yüksek indiriminden hesaplanır; elle girilmez.
+- Görsellerdeki indirim oranı her zaman ürünün kendi gerçek oranıdır. "…'e varan" ifadesindeki oran, feed'deki stokta olan Sezon Sonu ve Outlet ürünlerinin kendi en yüksek indiriminden ayrı ayrı hesaplanır; elle girilmez.
 - Üstü çizili fiyat feed'deki `price` alanından gelir. İndirim reklamlarında önceki fiyatın son 10 günün en düşük fiyatı olması gerekir; bunu Ticimax tarafında kontrol edin.
 - Ölçü/beden tablosu görselleri otomatik tanınır ve reklam görsellerinde kullanılmaz. Hiç fotoğrafı olmayan (yalnızca tablo görseli olan) ürünler ek feed'e girmez; listeleri `status.json` içindeki `fotografsiz_urunler` alanındadır.
+- Ticimax XML'i önbellekte tutsa da otomasyon her çalışmada güncel kopyayı ister; paneldeki değişiklikler bir sonraki çalışmada yansır.
 - Feed boş veya bozuk gelirse çalışma durur ve önceki gecenin görselleri yayında kalır. Hata olduğunda GitHub hesabınıza e-posta gelir.
 - GitHub, uzun süre değişmeyen depolarda zamanlanmış işleri durdurur; iş ayın ilk günü depoya küçük bir işaret yazarak bunu önler.
