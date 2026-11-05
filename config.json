@@ -1,8 +1,8 @@
 {
   "_aciklama": "Bu dosyayı GitHub'da düzenleyerek otomasyonun davranışını değiştirebilirsiniz.",
 
-  "rollout": ["end", "outlet"],
-  "_rollout": "Ek feed'e hangi kampanyaların ürünleri girsin. end = Sezon Sonu, outlet = Outlet, new = Yeni Sezon, none = indirimsiz. Test bitince [\"end\", \"outlet\", \"new\", \"none\"] yapın.",
+  "rollout": ["outlet"],
+  "_rollout": "Sezon Sonu (end) 5 Kasım'dan beri bilerek dışarıda: yaz ürünleri, reklam dışı. Ek feed'e hangi kampanyaların ürünleri girsin. end = Sezon Sonu, outlet = Outlet, new = Yeni Sezon, none = indirimsiz. Test bitince [\"end\", \"outlet\", \"new\", \"none\"] yapın.",
 
   "styles": {"new": "diptych", "end": "campaign", "outlet": "campaign", "none": "diptych"},
   "_styles": "Her kampanyanın tasarımı. Seçenekler: diptych (B · Diptik), campaign (C · Kampanya), editorial (A · Editoryal). Değiştirince o kampanyanın görselleri ertesi gece yenilenir.",
