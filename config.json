@@ -7,6 +7,9 @@
   "styles": {"new": "diptych", "end": "campaign", "outlet": "campaign", "none": "diptych"},
   "_styles": "Her kampanyanın tasarımı. Seçenekler: diptych (B · Diptik), campaign (C · Kampanya), editorial (A · Editoryal). Değiştirince o kampanyanın görselleri ertesi gece yenilenir.",
 
+  "exclude": ["p-3984"],
+  "_exclude": "Hiç görsel üretilmeyecek ve ek feed'e girmeyecek ürün grupları (item_group_id). p-3984 = İtalyan Zincir Kolye.",
+
   "source_images_per_product": 5,
   "jpeg_quality": 88
 }

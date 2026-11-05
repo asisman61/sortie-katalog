@@ -125,7 +125,8 @@ def main():
             sys.exit('Feed boş ya da bozuk geldi; önceki görseller korunuyor.')
         open(feed_path, 'wb').write(data)
     products = feed.load(feed_path)
-    live = [p for p in products if p['in_stock'] and p['images']]
+    excluded = set(cfg.get('exclude', []))
+    live = [p for p in products if p['in_stock'] and p['images'] and p['group_id'] not in excluded]
     if a.limit:
         live = live[:a.limit]
     rates = {}

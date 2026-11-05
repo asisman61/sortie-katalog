@@ -38,6 +38,7 @@ Ek feed yalnızca `id` ve `image_link` içerir; ürünün diğer bilgileri ana f
 | Tüm kataloğu yeni görsellere geçirmek | `config.json` → `"rollout": ["end", "outlet", "new", "none"]` |
 | Eski görsellere dönmek | Commerce Manager'da ek veri kaynağını silin veya `"rollout": []` |
 | Hemen yeniden üretmek | `config.json`'da herhangi bir değişikliği kaydetmek işi başlatır; ya da Actions → Katalog görselleri → Run workflow |
+| Bir ürünü tamamen dışarıda tutmak | `config.json` → `"exclude"` listesine ürünün grup kodunu (ör. `p-3984`) ekleyin |
 | Son çalışmanın özeti | `https://KULLANICI.github.io/DEPO/status.json` |
 | Bir kampanyanın tasarımını değiştirmek | `config.json` → `"styles"` (diptych, campaign, editorial) |
 | Story görsellerinin listesi | `https://KULLANICI.github.io/DEPO/feed/story.csv` |
