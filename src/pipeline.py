@@ -128,12 +128,14 @@ def main():
     live = [p for p in products if p['in_stock'] and p['images']]
     if a.limit:
         live = live[:a.limit]
-    umbrella = {}
+    rates = {}
     for p in products:
         c = render.badges(p).get('camp')
-        if p['in_stock'] and c in ('end', 'outlet'):
-            umbrella[c] = max(umbrella.get(c, 0), p['discount'])
-    umbrella = {k: v for k, v in umbrella.items() if v}
+        if p['in_stock'] and c in ('end', 'outlet') and p['discount']:
+            rates.setdefault(c, set()).add(p['discount'])
+    # "...'e varan" yalnızca kampanyada farklı oranlar varsa yazılır; hepsi aynıysa
+    # (ör. Outlet'te tümü %40) görselde sadece "İNDİRİM" yazar
+    umbrella = {k: max(v) for k, v in rates.items() if len(v) > 1}
     render.UMBRELLA = umbrella
     log(f'feed: {len(products)} grup, stokta {len(live)}; en yüksek indirimler: {umbrella}')
 
