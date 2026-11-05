@@ -517,7 +517,103 @@ def campaign(p, imgs, fmt):
     paste_logo(c, 'icon_white', 54, (W / 2, 1690))
     return c.convert('RGB')
 
-STYLES = {'editorial': editorial, 'diptych': diptych, 'campaign': campaign}
+# ---------- D: ESSENTIAL (sade, premium; grafik yok) ----------
+
+PAPER = (243, 240, 235)
+SOFT = (138, 130, 121)
+
+def _campaign_line(p, b):
+    """Kampanyayı rozet yerine tek satırlık sakin bir metinle söyler."""
+    camp = b.get('camp')
+    if camp == 'new':
+        t = 'Yeni Sezon'
+    elif camp == 'end':
+        t = 'Sezon Sonu'
+    else:
+        return None
+    if 'deal' in b:
+        t += f"  —  {b['deal']} indirim"
+    return t
+
+def essential(p, imgs, fmt):
+    story = fmt == 'story'
+    W, H = (1080, 1920) if story else (1080, 1080)
+    c = Image.new('RGBA', (W, H), PAPER + (255,))
+    d = ImageDraw.Draw(c)
+    b = badges(p)
+    now, old = price_parts(p)
+    hero = pick_hero(imgs)
+    line = _campaign_line(p, b)
+    fl = font('sans', 19 if not story else 22, 400)
+    fn = font('serif', 34 if not story else 40, 400)
+    fprice = font('sans', 24 if not story else 28, 400)
+    fold = font('sans', 20 if not story else 24, 400)
+    if not story:
+        # sol: tek büyük fotoğraf (paspartu); sağ: dar, sessiz bilgi sütunu
+        m = 60
+        ph = H - 2 * m
+        pw = int(ph * 0.70)
+        c.paste(smart_cover(hero, pw, ph, p['type']), (m, m))
+        x = m + pw + 46
+        colw = W - x - m
+        paste_logo(c, 'icon_ink', 40, (x, m), anchor='l')
+        # alt hizalı metin bloğu
+        ftitle, lines = fit_lines('serif', clean_title(p), colw, 32, 24, 4)
+        lh = ftitle.size * 1.18
+        rows = []
+        if line:
+            rows.append(('line', 0))
+        y = H - m
+        # aşağıdan yukarı yerleştir
+        if b.get('last'):
+            draw_text(d, (x, y), 'Son bedenler: ' + ', '.join(p['in_stock']), fl, SOFT)
+            y -= 40
+        if old:
+            w2 = draw_text(d, (x, y), old, fold, SOFT)
+            strike(d, x, x + w2, y - 8, SOFT, 1)
+            y -= 38
+        draw_text(d, (x, y), now, fprice, INK)
+        y -= 34 + 22
+        if p['color']:
+            draw_text(d, (x, y), p['color'], fl, SOFT)
+            y -= 40
+        for k, ln in enumerate(reversed(lines)):
+            draw_text(d, (x, y - k * lh), ln, ftitle, INK)
+        y -= (len(lines) - 1) * lh + ftitle.size + 28
+        if line:
+            for k, ln in enumerate(reversed(wrap(fl, line, colw, 0, 3))):
+                draw_text(d, (x, y - k * 28), ln, fl, WINE if b.get('camp') == 'end' else INK)
+        return c.convert('RGB')
+    # STORY: geniş paspartu içinde tek fotoğraf; metin fotoğrafın altında, güvenli alanda
+    m = 72
+    top = 300
+    pw = W - 2 * m
+    ph = 1000
+    paste_logo(c, 'logo_ink', 190, (W / 2, 238))
+    c.paste(smart_cover(hero, pw, ph, p['type']), (m, top))
+    y = top + ph + 58
+    ftitle, lines = fit_lines('serif', clean_title(p), pw - 260, 40, 30, 2)
+    lh = ftitle.size * 1.16
+    for k, ln in enumerate(lines):
+        draw_text(d, (m, y + k * lh), ln, ftitle, INK)
+    rx = W - m
+    draw_text(d, (rx, y), now, fprice, INK, anchor='r')
+    if old:
+        w2 = draw_text(d, (rx, y + 38), old, fold, SOFT, anchor='r')
+        strike(d, rx - w2, rx, y + 29, SOFT, 1)
+    y += (len(lines) - 1) * lh + 44
+    sub = p['color'] or ''
+    if b.get('last'):
+        sub = (sub + '   ·   ' if sub else '') + 'Son bedenler: ' + ', '.join(p['in_stock'])
+    if sub:
+        draw_text(d, (m, y), sub, fl, SOFT)
+        y += 44
+    if line:
+        draw_text(d, (m, y), line, fl, WINE if b.get('camp') == 'end' else INK)
+    assert y <= 1545, f'story metni güvenli alan dışında: {y}'
+    return c.convert('RGB')
+
+STYLES = {'editorial': editorial, 'diptych': diptych, 'campaign': campaign, 'essential': essential}
 
 def render(p, style, fmt, files):
     """files: ürünün yerel görsel yolları, feed sırasıyla."""
